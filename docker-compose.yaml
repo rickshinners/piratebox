@@ -1,0 +1,109 @@
+version: '3'
+volumes:
+  movies:
+    external: true
+  series:
+    external: true
+  transmission_config:
+  transmission_downloads:
+  transmission_watch:
+  transmission_completed:
+  nzbget_config:
+  nzbget_downloads:
+  nzbget_completed:
+  sonarr_config:
+  radarr_config:
+  plex_config:
+  plex_transcode:
+  plexpy_config:
+services:
+  nginx:
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+  transmission:
+    image: linuxserver/transmission
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    volumes:
+      - transmission_config:/config
+      - transmission_downloads:/downloads
+      - transmission_watch:/watch
+      - transmission_completed:/downloads/complete
+    restart: always
+  nzbget:
+    image: linuxserver/nzbget
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 6789:6789
+    volumes:
+      - nzbget_config:/config
+      - nzbget_downloads:/downloads
+      - nzbget_completed:/downloads/completed
+    restart: always
+  sonarr:
+    image: linuxserver/sonarr
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 8989:8989
+    volumes:
+      - sonarr_config:/config
+      - series:/tv
+      - nzbget_completed:/downloads/nzbget_completed
+      - transmission_completed:/downloads/transmission_completed
+    restart: always
+  radarr:
+    image: linuxserver/radarr
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 7878:7878
+    volumes:
+      - radarr_config:/config
+      - movies:/media/movies
+      - nzbget_completed:/downloads/nzbget_completed
+      - transmission_completed:/downloads/transmission_completed
+    restart: always
+  plex:
+    image: linuxserver/plex
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - VERSION=latest
+    network_mode: host
+    volumes:
+      - plex_config:/config
+      - series:/data/tvshows:ro
+      - movies:/data/movies:ro
+      - plex_transcode:/transcode
+    restart: always
+  plexpy:
+    image: linuxserver/plexpy
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 8181:8181
+    volumes:
+      - plex_config:/logs:ro
+      - plexpy_config:/config
+    restart: always
