@@ -7,4 +7,6 @@ DOCKER_COMPOSE="docker-compose -f ${CWD}/docker-compose.yaml --project-directory
 $DOCKER_COMPOSE down
 
 VOLUMES=$(docker volume ls --filter "label=com.docker.compose.project=${DOCKER_COMPOSE_PROJECT}" --quiet)
-docker volume rm $VOLUMES
+if [ ! -z "$VOLUMES" ]; then
+    docker volume rm $VOLUMES
+fi
