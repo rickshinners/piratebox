@@ -1,10 +1,10 @@
 #!/bin/bash
 
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PREFIX="$(basename $CWD)"
+DOCKER_COMPOSE_PROJECT="$(basename $CWD)"
 DOCKER_COMPOSE="docker-compose -f ${CWD}/docker-compose.yaml --project-directory ${CWD}"
 
 $DOCKER_COMPOSE down
 
-VOLUMES=$(${DOCKER_COMPOSE} config --volumes | sed -e '/series/d' -e '/movies/d' | sed "s/^/${PREFIX}_/" | tr '\n' ' ')
+VOLUMES=$(docker volume ls --filter "label=com.docker.compose.project=${DOCKER_COMPOSE_PROJECT}" --quiet)
 docker volume rm $VOLUMES
