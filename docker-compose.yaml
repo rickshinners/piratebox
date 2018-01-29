@@ -5,17 +5,31 @@ volumes:
   series:
     external: true
   transmission_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   transmission_downloads:
   transmission_watch:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   transmission_completed:
   nzbget_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   nzbget_downloads:
   nzbget_completed:
   sonarr_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   radarr_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   plex_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
   plex_transcode:
   plexpy_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
 services:
   nginx:
     image: nginx
