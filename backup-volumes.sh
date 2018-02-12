@@ -41,9 +41,9 @@ backup() {
     TIMESTAMP=$(date +%Y%m%dT%H%M%S)
     if [ ! -z "$VOLUMES" ]; then
         for volume in $VOLUMES; do
-            DEST="${volume}.${TIMESTAMP}"
-            echo "Backing up" $volume "->" "${BACKUP_DIR_ABS}/${DEST}.tar.bz2"
-            docker run --rm -v $volume:/volume:ro -v "${BACKUP_DIR_ABS}":/backup loomchild/volume-backup backup "$DEST"
+            DEST="${volume}.${TIMESTAMP}.tar.gz"
+            echo "Backing up" $volume "->" "${BACKUP_DIR_ABS}/${DEST}"
+            docker run --rm -v $volume:/volume:ro -v "${BACKUP_DIR_ABS}":/backup alpine:latest tar -czf "/backup/${DEST}" -C "/volume/" ./
         done
     else
         echo "No volumes found to backup"
@@ -85,9 +85,10 @@ restore() {
             --label com.docker.compose.project="${DOCKER_COMPOSE_PROJECT}" \
             --label com.docker.compose.volume="${docker_compose_volume}" \
             --label com.github.rickshinners.piratebox.backup="yes" > /dev/null
+        # Do the restore
         filename=$(basename "${most_recent}")
-        archive_name=${filename%.*.*}
-        docker run --rm -v $volume_name:/volume -v "${BACKUP_DIR_ABS}":/backup loomchild/volume-backup restore "${archive_name}"
+        docker run --rm -v $volume_name:/volume alpine:latest rm -rf /volume/* /volume/..?* /volume/.[!.]*
+        docker run --rm -v $volume_name:/volume -v "${BACKUP_DIR_ABS}":/backup alpine:latest tar -C /volume -xzf "/backup/${filename}"
     done
     start_containers
 }
