@@ -36,6 +36,9 @@ volumes:
   plexpy_config:
     labels:
       com.github.rickshinners.piratebox.backup: 'yes'
+  ombi_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
 services:
   traefik:
     image: traefik
@@ -210,4 +213,20 @@ services:
       traefik.enable: "true"
       traefik.frontend.rule: "Host:plexpy.${DOMAIN}"
       traefik.port: "8181"
+    restart: unless-stopped
+  ombi:
+    image: linuxserver/ombi
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 3579:3579
+    volumes:
+      - ombi_config:/config
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:ombi.${DOMAIN}"
+      traefik.port: "3579"
     restart: unless-stopped
