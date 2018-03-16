@@ -4,6 +4,12 @@ volumes:
     external: true
   series:
     external: true
+  organizr_config:
+    labels:
+      com.github.rickshinners.piratebox.backup: 'yes'
+  portainer_data:
+    labels:
+      com.github.rickshinners.piratebox.backups: 'yes'
   transmission_config:
     labels:
       com.github.rickshinners.piratebox.backup: 'yes'
@@ -31,13 +37,67 @@ volumes:
     labels:
       com.github.rickshinners.piratebox.backup: 'yes'
 services:
-  nginx:
-    image: nginx
+  traefik:
+    image: traefik
+    command: --api --docker --docker.domain=${DOMAIN} --logLevel=DEBUG
     ports:
-      - 80:80
+      - "80:80"
+      - 8080:8080
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+    labels:
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:monitor.${DOMAIN}"
+      traefik.port: "8080"
+      com.centurylinklabs.watchtower.enable: "true"
     restart: always
+  watchtower:
+    image: v2tec/watchtower
+    command: --cleanup --label-enable --schedule="0 0 5 * * *"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+    restart: unless-stopped
+  portainer:
+    image: portainer/portainer
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:portainer.${DOMAIN}"
+      traefik.port: "9000"
+    restart: unless-stopped
+  glances:
+    image: nicolargo/glances
+    ports:
+      - 61208-61209:61208-61209
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    pid: host
+    environment:
+      - GLANCES_OPT=-w
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:glances.${DOMAIN}"
+      traefik.port: "61208"
+    restart: unless-stopped
+  organizr:
+    image: lsiocommunity/organizr
+    volumes:
+      - organizr_config:/config
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:${DOMAIN}"
+      traefik.port: "80"
+    restart: unless-stopped
   transmission:
     image: linuxserver/transmission
     environment:
@@ -53,7 +113,12 @@ services:
       - transmission_downloads:/downloads
       - transmission_watch:/watch
       - transmission_completed:/downloads/complete
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:transmission.${DOMAIN}"
+      traefik.port: "9091"
+    restart: unless-stopped
   nzbget:
     image: linuxserver/nzbget
     environment:
@@ -66,7 +131,12 @@ services:
       - nzbget_config:/config
       - nzbget_downloads:/downloads
       - nzbget_completed:/downloads/completed
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:nzbget.${DOMAIN}"
+      traefik.port: "6789"
+    restart: unless-stopped
   sonarr:
     image: linuxserver/sonarr
     environment:
@@ -80,7 +150,12 @@ services:
       - series:/tv
       - nzbget_completed:/downloads/nzbget_completed
       - transmission_completed:/downloads/transmission_completed
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:sonarr.${DOMAIN}"
+      traefik.port: "8989"
+    restart: unless-stopped
   radarr:
     image: linuxserver/radarr
     environment:
@@ -94,7 +169,12 @@ services:
       - movies:/media/movies
       - nzbget_completed:/downloads/nzbget_completed
       - transmission_completed:/downloads/transmission_completed
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:radarr.${DOMAIN}"
+      traefik.port: "7878"
+    restart: unless-stopped
   plex:
     image: linuxserver/plex
     environment:
@@ -108,7 +188,12 @@ services:
       - series:/data/tvshows:ro
       - movies:/data/movies:ro
       - plex_transcode:/transcode
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:plex.${DOMAIN}"
+      traefik.port: "32400"
+    restart: unless-stopped
   plexpy:
     image: linuxserver/plexpy
     environment:
@@ -120,4 +205,9 @@ services:
     volumes:
       - plex_config:/logs:ro
       - plexpy_config:/config
-    restart: always
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:plexpy.${DOMAIN}"
+      traefik.port: "8181"
+    restart: unless-stopped
