@@ -42,7 +42,7 @@ volumes:
 services:
   traefik:
     image: traefik
-    command: --api --docker --docker.domain=${DOMAIN} --logLevel=DEBUG
+    command: --api --docker --docker.domain=${DOMAIN}
     ports:
       - "80:80"
       - 8080:8080

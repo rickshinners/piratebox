@@ -1,50 +1,16 @@
 
 # Tips
-* all volumes can be removed by running: ```docker-compose down -v```
-
-* external volumes can be created against mount points like this: ```docker volume create --opt type=none --opt device=/path/to/shows --opt o=bind --name series```
+* All volumes can be removed by running: ```docker-compose down -v```
+* External volumes can be created against mount points like this: ```docker volume create --opt type=none --opt device=/path/to/shows --opt o=bind --name series```
+* The default username/password for NZBGet is _nzbget_/_tegbzn6789_
+* Password authentication for NZBGet can be disabled under **Settings->Security** by clearing out both **ControlUsername** and **ControlPassword** fields
 
 
 # Intitial setup
-When the docker volumes are created you'll need to do some initial setup to ensure the nginx reverse proxy works with each subsystem and that they can talk to each other.
-## Sonarr
-Sonarr must be accessed by http://_\<hostname\>_:8989/ until after the initial setup.
+* Update **.env** with the hostname of your server and your timezone
+* Services can be accessed via http://_servicename_._hostname_/ except for Organizr which can be accessed by http://_hostname_/
+* Services can access each other via their servicename, so Sonarr can ping transmission via the hostname _transmission_
 
-Set the following settings:
-* **General->URL Base**: _/sonarr_
 
-Add the following download clients:
-* NZBGet
-    * **Host**: _nzbget_
-    * **Username**: (if set)
-    * **Password**: (if set)
-* Transmission
-    * **Host**: _transmission_
-    * **Url Base**: _/transmission_
-## Radarr
-Radarr must be accessed by http://_\<hostname\>_:7878/ until after the initial setup.
-
-Set the following settings:
-* **General->URL Base**: _/radarr
-
-Add the following download clients:
-* NZBGet
-    * **Host**: _nzbget_
-    * **Username**: (if set)
-    * **Password**: (if set)
-* Transmission
-    * **Host**: _transmission_
-    * **Url Base**: _/transmission_
-## Plex
-_Note: Host networking does not work on Mac OSX_
-
-Plex can be accessed via http://_\<hostname\>_:32400/
-## Plexpy
-Set the following settings:
-* **Plex Media Server->PLEX LOGS->Logs Folder**: _/logs/Library/Application Support/Plex Media Server/Logs_
-## Transmission
-No setup needed
-## NzbGet
-* Default username: _nzbget_
-* Default password: _tegbzn6789_
-* Password authentication can be disabled under **Settings->Security** by clearing out both **ControlUsername** and **ControlPassword** fields
+# Backup / Restore
+Backups can be made by running ```./backup-volumes.sh backup destination/```.  This will create timestamped backup files of each important volume in the destination directory.  To restore, simply run ```./backup-volumes.sh restore destination/```.  This will overwrite any existing volumes that may exist.
