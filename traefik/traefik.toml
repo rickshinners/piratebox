@@ -1,0 +1,25 @@
+debug = false
+
+logLevel = "ERROR"
+defaultEntryPoints = ["https","http"]
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+    address = ":443"
+    [entryPoints.https.tls]
+    [entryPoints.https.auth.basic]
+      usersFile = "/etc/traefik/.htpasswd"
+
+[retry]
+
+[acme]
+  email = "<your contact e-mail address>"
+  storage = "acme.json"
+  entryPoint = "https"
+  OnHostRule = true
+  [acme.dnsChallenge]
+    provider = "route53"

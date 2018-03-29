@@ -7,7 +7,22 @@
 
 
 # Intitial setup
-* Update **.env** with the hostname of your server and your timezone
+* Copy **.env.example** to **.env** and fill in each value.  The AWS variables are for the ACME DNS challenge and require the ability to create TXT DNS records in your hosted zone.
+* Update your e-mail address in **traefik/traefik.toml**
+* Create **traefik/acme.json** with the proper permissions with the following commands:
+    ```
+    touch traefik/acme.json
+    chmod 600 traefik/acme.json
+    ```
+* Create your **.htpasswd** file with the following command:
+    ```
+    htpasswd -cBC 12 traefik/.htpasswd <username>
+    ```
+    * the 12 is the bcrypt cost. You can lower it if the password hash takes too long, or raise it to be more secure
+    * Add more users by running the following command for each user:
+        ```
+        htpasswd -BC 12 traefik/.htpasswd <username>
+        ```
 * Services can be accessed via http://_servicename_._hostname_/ except for Organizr which can be accessed by http://_hostname_/
 * Services can access each other via their servicename, so Sonarr can ping transmission via the hostname _transmission_
 

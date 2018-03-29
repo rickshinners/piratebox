@@ -42,13 +42,21 @@ volumes:
 services:
   traefik:
     image: traefik
-    command: --api --docker --docker.domain=${DOMAIN}
+    command: --api --docker --docker.watch --docker.domain=${DOMAIN} --acme.domains=${DOMAIN}
     ports:
-      - "80:80"
+      - 80:80
+      - 443:443
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /dev/null:/traefik.toml
+      - ./traefik/acme.json:/acme.json
+      - ./traefik/traefik.toml:/etc/traefik/traefik.toml
+      - ./traefik/.htpasswd:/etc/traefik/.htpasswd:ro
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_REGION
+      - AWS_HOSTED_ZONE_ID
     labels:
       traefik.enable: "true"
       traefik.frontend.rule: "Host:monitor.${DOMAIN}"
@@ -229,4 +237,20 @@ services:
       traefik.enable: "true"
       traefik.frontend.rule: "Host:ombi.${DOMAIN}"
       traefik.port: "3579"
+    restart: unless-stopped
+  netdata:
+    image: titpetric/netdata
+    ports:
+      - 19999:19999
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/host/var/run/docker.sock:ro
+    cap_add:
+      - SYS_PTRACE
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      traefik.enable: "true"
+      traefik.frontend.rule: "Host:netdata.${DOMAIN}"
+      traefik.port: "19999"
     restart: unless-stopped
