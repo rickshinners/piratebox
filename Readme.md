@@ -23,6 +23,7 @@
         ```
         htpasswd -BC 12 traefik/.htpasswd <username>
         ```
+* Update the hostname that will be displayed in NetData in **netdata/netdata.conf**.  This is desired since by default this is set to the hostname of the container which is almost never useful.
 * Services can be accessed via http://_servicename_._hostname_/ except for Organizr which can be accessed by http://_hostname_/
 * Services can access each other via their servicename, so Sonarr can ping transmission via the hostname _transmission_
 

@@ -246,6 +246,7 @@ services:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /var/run/docker.sock:/host/var/run/docker.sock:ro
+      - ./netdata/netdata.conf:/etc/netdata/override/netdata.conf:ro
     cap_add:
       - SYS_PTRACE
     labels:
