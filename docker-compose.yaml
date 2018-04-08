@@ -71,7 +71,7 @@ services:
     labels:
       com.centurylinklabs.watchtower.enable: "true"
     restart: unless-stopped
-  update-dns:
+  dns-updater:
     image: rickshinners/dns-updater
     environment:
       - AWS_ACCESS_KEY_ID
