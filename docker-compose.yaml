@@ -42,7 +42,7 @@ volumes:
 services:
   traefik:
     image: traefik
-    command: --api --docker --docker.watch --docker.domain=${DOMAIN} --acme.domains=${DOMAIN}
+    command: --api --docker --docker.watch --docker.exposedbydefault=false --docker.domain=${DOMAIN} --acme.domains=${DOMAIN}
     ports:
       - 80:80
       - 443:443
