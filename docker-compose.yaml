@@ -33,7 +33,7 @@ volumes:
     labels:
       com.github.rickshinners.piratebox.backup: 'yes'
   plex_transcode:
-  plexpy_config:
+  tautulli_config:
     labels:
       com.github.rickshinners.piratebox.backup: 'yes'
   ombi_config:
@@ -216,8 +216,8 @@ services:
       traefik.frontend.rule: "Host:plex.${DOMAIN}"
       traefik.port: "32400"
     restart: unless-stopped
-  plexpy:
-    image: linuxserver/plexpy
+  tautulli:
+    image: linuxserver/tautulli
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
@@ -226,11 +226,11 @@ services:
       - 8181:8181
     volumes:
       - plex_config:/logs:ro
-      - plexpy_config:/config
+      - tautulli_config:/config
     labels:
       com.centurylinklabs.watchtower.enable: "true"
       traefik.enable: "true"
-      traefik.frontend.rule: "Host:plexpy.${DOMAIN}"
+      traefik.frontend.rule: "Host:tautulli.${DOMAIN}"
       traefik.port: "8181"
     restart: unless-stopped
   ombi:
